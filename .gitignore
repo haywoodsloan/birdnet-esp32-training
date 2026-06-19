@@ -1,3 +1,14 @@
 # BirdNet Training Outputs and Local Recordings
 out/
 rec/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local scratch / one-off analysis files (e.g. _verify.py, _cmp.py, _r10.ps1)
+_*.py
+_*.txt
+_*.ps1

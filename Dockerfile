@@ -101,7 +101,7 @@ RUN F=birdnet-stm32/birdnet_stm32/training/trainer.py \
     && echo "early-stopping fix applied: monitor=val_top1_acc mode=max patience=600"
 
 # --- Data-prep tooling + GPU entrypoint (small files from the build context) ---
-COPY sort_inat.py make_negatives.py species_plainfield.txt extract_dirs.txt prepare_data.sh patch_distill.py /workspace/prep/
+COPY sort_inat.py make_negatives.py species_plainfield.txt extract_dirs.txt prepare_data.sh patch_distill.py patch_train_hpf.py /workspace/prep/
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 # Normalize line endings (the build context is authored on Windows) and make
 # the scripts executable. extract_dirs.txt MUST be LF: tar -T treats a trailing
@@ -117,6 +117,16 @@ RUN sed -i 's/\r$//' /workspace/prep/patch_distill.py \
     && python /workspace/prep/patch_distill.py /workspace/birdnet-stm32/birdnet_stm32/data/generator.py \
     && python -c "import ast; ast.parse(open('/workspace/birdnet-stm32/birdnet_stm32/data/generator.py').read())" \
     && echo "distillation hook installed"
+
+# --- Device-domain match hook (no-op unless BIRDNET_TRAIN_HPF_HZ / NOISE set) ---
+# Patches audio/spectrogram.py so training audio can be DC-removed + high-passed
+# and mixed with recorded device noise, matching what the ESP32 firmware feeds
+# the model at inference. Gated on env vars, so it does not affect normal
+# training. Build fails if the patch anchors are missing.
+RUN sed -i 's/\r$//' /workspace/prep/patch_train_hpf.py \
+    && python /workspace/prep/patch_train_hpf.py \
+    && python -c "import ast; ast.parse(open('/workspace/birdnet-stm32/birdnet_stm32/audio/spectrogram.py').read())" \
+    && echo "device-match hook installed"
 
 # Persist the Blackwell (sm_120) PTX->SASS JIT cache so the one-time
 # compilation only happens on the very first GPU run, not every container.

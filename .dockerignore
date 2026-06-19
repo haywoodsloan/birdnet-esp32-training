@@ -10,3 +10,4 @@
 !prepare_data.sh
 !entrypoint.sh
 !patch_distill.py
+!patch_train_hpf.py

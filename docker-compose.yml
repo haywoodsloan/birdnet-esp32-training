@@ -40,12 +40,22 @@ services:
       - birdnet_data:/data
       - cuda_cache:/cuda_cache
       - ./out:/out
+      - ./rec:/rec            # device recordings used as the noise-mix source
     working_dir: /workspace/birdnet-stm32
     shm_size: "2gb"          # multiprocessing data loaders need >64 MB /dev/shm
     # BIRDNET_SOFT_TARGETS activates BirdNET soft-target distillation IF the npz
     # exists (make_soft_targets.py writes it); harmless no-op otherwise.
+    #
+    # Device-domain match (baked patch_train_hpf.py): high-pass + mic-noise
+    # mixing so training audio matches what the ESP32 firmware feeds at
+    # inference (see run10). Override on the host to disable, e.g.
+    # BIRDNET_TRAIN_HPF_HZ=0 BIRDNET_TRAIN_NOISE_PROB=0. NOISE_DIR=/rec needs the
+    # device recordings mounted above; an empty/missing dir just skips the mix.
     environment:
       BIRDNET_SOFT_TARGETS: /data/soft_targets.npz
+      BIRDNET_TRAIN_HPF_HZ: "${BIRDNET_TRAIN_HPF_HZ:-200}"
+      BIRDNET_TRAIN_NOISE_PROB: "${BIRDNET_TRAIN_NOISE_PROB:-0.3}"
+      BIRDNET_TRAIN_NOISE_DIR: /rec
     command:
       - python
       - -m

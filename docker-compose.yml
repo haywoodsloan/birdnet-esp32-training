@@ -1,0 +1,124 @@
+# BirdNET-STM32 GPU training stack.
+#
+# One-shot flow (build image -> prepare data -> train on GPU):
+#     docker compose run --rm prep      # downloads/sorts data into the volume
+#     docker compose run --rm train     # GPU training, writes models to ./out
+#
+# Data lives in the `birdnet_data` named volume (WSL2 ext4 = fast random reads
+# for the thousands of WAV files). Raw iNatSounds cache lives in `inat_raw`,
+# which can be deleted after prep to reclaim space. Trained models are written
+# to ./out on the host, ready to quantize and copy to the SD card.
+name: birdnet-stm32
+
+services:
+  # --- Data preparation (CPU): clone-free; uses the baked-in prep tooling. ---
+  prep:
+    build:
+      context: .
+      args:
+        BIRDNET_REF: master
+    image: birdnet-stm32-train:latest
+    volumes:
+      - birdnet_data:/data
+      - inat_raw:/inat
+    environment:
+      MAX_PER_SPECIES: "1000"
+      TEST_FRAC: "0.15"
+    command: ["bash", "/workspace/prep/prepare_data.sh"]
+
+  # --- GPU training. ---
+  train:
+    image: birdnet-stm32-train:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - birdnet_data:/data
+      - cuda_cache:/cuda_cache
+      - ./out:/out
+    working_dir: /workspace/birdnet-stm32
+    shm_size: "2gb"          # multiprocessing data loaders need >64 MB /dev/shm
+    # BIRDNET_SOFT_TARGETS activates BirdNET soft-target distillation IF the npz
+    # exists (make_soft_targets.py writes it); harmless no-op otherwise.
+    environment:
+      BIRDNET_SOFT_TARGETS: /data/soft_targets.npz
+    command:
+      - python
+      - -m
+      - birdnet_stm32
+      - train
+      - --data_path_train=/data/train
+      - --audio_frontend=hybrid
+      - --mag_scale=pwl
+      - --sample_rate=24000
+      - --fft_length=512
+      - --spec_width=256
+      - --chunk_duration=3
+      - --num_mels=64
+      - --alpha=1.0
+      - --batch_size=64
+      - --epochs=${EPOCHS:-500}
+      - --num_workers=16
+      # Tier-2 accuracy tweaks (motivated by the weak-label failure analysis):
+      # less mixup/label-smoothing -> sharper top-1 + higher confidence; bigger
+      # embedding head to separate the confusable clusters. mixup stays > 0 so
+      # the classifier head remains SIGMOID (the firmware's model contract).
+      - --mixup_probability=0.10
+      - --label_smoothing=0.05
+      - --embeddings_size=384
+      - --checkpoint_path=/out/best_model.keras
+
+  # --- INT8 TFLite conversion (GPU optional; run after training). ---
+  #   docker compose run --rm convert
+  convert:
+    image: birdnet-stm32-train:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - birdnet_data:/data
+      - cuda_cache:/cuda_cache
+      - ./out:/out
+    working_dir: /workspace/birdnet-stm32
+    shm_size: "2gb"
+    command:
+      - python
+      - -m
+      - birdnet_stm32
+      - convert
+      - --checkpoint_path=/out/best_model.keras
+      - --model_config=/out/best_model_model_config.json
+      - --data_path_train=/data/train
+
+  # --- Interactive shell / GPU sanity check. ---
+  #   docker compose run --rm shell
+  shell:
+    image: birdnet-stm32-train:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - birdnet_data:/data
+      - inat_raw:/inat
+      - cuda_cache:/cuda_cache
+      - ./out:/out
+    working_dir: /workspace/birdnet-stm32
+    shm_size: "2gb"
+    command: ["bash"]
+
+volumes:
+  birdnet_data:
+  inat_raw:
+  cuda_cache:

@@ -1,0 +1,12 @@
+# Whitelist approach: ignore everything in the build context, then re-include
+# only the small data-prep tooling the image needs. This keeps the multi-GB
+# extracted/, tarballs, esc50.zip, and train.json out of the build context.
+*
+
+!sort_inat.py
+!make_negatives.py
+!species_plainfield.txt
+!extract_dirs.txt
+!prepare_data.sh
+!entrypoint.sh
+!patch_distill.py

@@ -1,0 +1,107 @@
+# Plainfield / central-Indiana (Eastern US) bird species for the BirdNET-STM32
+# "hybrid" model trained for this firmware.
+#
+# One scientific name per line. Every species here is (a) found in central
+# Indiana and (b) verified present in the iNatSounds 2024 train set with >=150
+# recordings (see inatsounds/explore_inat.py), so each class has enough data.
+# Eurasian / western-US / Australian species from the dataset are intentionally
+# excluded -- they don't occur in Plainfield and would only confuse the model.
+#
+# These MUST match (in the same order) the labels in main/model/labels.c once
+# the model is trained and deployed. Order here = class index order.
+
+# --- Backyard / feeder regulars ---
+Cardinalis cardinalis        # Northern Cardinal
+Cyanocitta cristata          # Blue Jay
+Poecile carolinensis         # Carolina Chickadee
+Baeolophus bicolor           # Tufted Titmouse
+Sitta carolinensis           # White-breasted Nuthatch
+Sitta canadensis             # Red-breasted Nuthatch
+Spinus tristis               # American Goldfinch
+Spinus pinus                 # Pine Siskin
+Haemorhous mexicanus         # House Finch
+Haemorhous purpureus         # Purple Finch
+Passer domesticus            # House Sparrow
+Zenaida macroura             # Mourning Dove
+Bombycilla cedrorum          # Cedar Waxwing
+
+# --- Thrushes / mimids ---
+Turdus migratorius           # American Robin
+Hylocichla mustelina         # Wood Thrush
+Catharus ustulatus           # Swainson's Thrush
+Catharus guttatus            # Hermit Thrush
+Catharus fuscescens          # Veery
+Sialia sialis                # Eastern Bluebird
+Dumetella carolinensis       # Gray Catbird
+Mimus polyglottos            # Northern Mockingbird
+Toxostoma rufum              # Brown Thrasher
+
+# --- Wrens / gnatcatcher / kinglets / creeper ---
+Thryothorus ludovicianus     # Carolina Wren
+Troglodytes aedon            # House Wren
+Polioptila caerulea          # Blue-gray Gnatcatcher
+Regulus satrapa              # Golden-crowned Kinglet
+Corthylio calendula          # Ruby-crowned Kinglet
+Certhia americana            # Brown Creeper
+
+# --- Sparrows / towhee / junco / bunting / grosbeak ---
+Melospiza melodia            # Song Sparrow
+Spizella passerina           # Chipping Sparrow
+Spizella pusilla             # Field Sparrow
+Zonotrichia albicollis       # White-throated Sparrow
+Junco hyemalis               # Dark-eyed Junco
+Pipilo erythrophthalmus      # Eastern Towhee
+Passerina cyanea             # Indigo Bunting
+Pheucticus ludovicianus      # Rose-breasted Grosbeak
+
+# --- Blackbirds / oriole ---
+Agelaius phoeniceus          # Red-winged Blackbird
+Quiscalus quiscula           # Common Grackle
+Molothrus ater               # Brown-headed Cowbird
+Sturnella magna              # Eastern Meadowlark
+Icterus galbula              # Baltimore Oriole
+Sturnus vulgaris             # European Starling (introduced, common)
+
+# --- Woodpeckers ---
+Melanerpes carolinus         # Red-bellied Woodpecker
+Dryobates pubescens          # Downy Woodpecker
+Dryobates villosus           # Hairy Woodpecker
+Colaptes auratus             # Northern Flicker
+Dryocopus pileatus           # Pileated Woodpecker
+
+# --- Vireos / warblers / tanagers / flycatchers ---
+Vireo olivaceus              # Red-eyed Vireo
+Vireo gilvus                 # Warbling Vireo
+Setophaga petechia           # Yellow Warbler
+Setophaga ruticilla          # American Redstart
+Geothlypis trichas           # Common Yellowthroat
+Mniotilta varia              # Black-and-white Warbler
+Seiurus aurocapilla          # Ovenbird
+Piranga olivacea             # Scarlet Tanager
+Piranga rubra                # Summer Tanager
+Sayornis phoebe              # Eastern Phoebe
+Contopus virens              # Eastern Wood-Pewee
+Myiarchus crinitus           # Great Crested Flycatcher
+Empidonax virescens          # Acadian Flycatcher
+
+# --- Corvids ---
+Corvus brachyrhynchos        # American Crow
+
+# --- Doves / cuckoo / nighthawk ---
+Coccyzus americanus          # Yellow-billed Cuckoo
+Chordeiles minor             # Common Nighthawk
+
+# --- Raptors / owls ---
+Buteo jamaicensis            # Red-tailed Hawk
+Buteo lineatus               # Red-shouldered Hawk
+Accipiter cooperii           # Cooper's Hawk
+Strix varia                  # Barred Owl
+Bubo virginianus             # Great Horned Owl
+Megascops asio               # Eastern Screech-Owl
+
+# --- Waterbirds / others heard in the area ---
+Branta canadensis            # Canada Goose
+Charadrius vociferus         # Killdeer
+Megaceryle alcyon            # Belted Kingfisher
+Antrostomus vociferus        # Eastern Whip-poor-will
+Colinus virginianus          # Northern Bobwhite
